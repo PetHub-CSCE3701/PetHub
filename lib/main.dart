@@ -3,11 +3,9 @@ import 'User.dart';
 import 'Comment.dart';
 import 'Post.dart';
 
-
 void main() {
   runApp(MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   @override
@@ -83,9 +81,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    posts[index].user!.name,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/userInfo',
+                        arguments: posts[index].user,
+                      );
+                    },
+                    child: Text(
+                      posts[index].user!.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(

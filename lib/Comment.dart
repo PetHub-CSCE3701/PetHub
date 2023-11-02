@@ -18,7 +18,7 @@ class Comment {
 
    Comment.defaultConstructor()
        : commenter = User.defaultConstructor(),
-          post = Post(),
+          post = Post.defaultConstructor(),
           commentDate = '',
           commentText = '',
           likes = 0;

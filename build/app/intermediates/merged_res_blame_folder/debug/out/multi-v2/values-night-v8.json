@@ -4,7 +4,7 @@
             "outputFile": "com.example.example.app-mergeDebugResources-9:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "/Users/mostafa/Desktop/Software Engineering/example/android/app/src/main/res/values-night/styles.xml",
+                    "source": "/Users/mostafa/Desktop/Software Engineering/PetHub/android/app/src/main/res/values-night/styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",

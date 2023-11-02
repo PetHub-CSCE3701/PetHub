@@ -1,27 +1,33 @@
-import 'package:flutter/material.dart';
 import 'User.dart';
 import 'Comment.dart';
 
-
 class Post {
-  static List<Post> allPosts = []; // Static list of all posts created
+  final User user;
+  final String postDate;
+  final String postText;
+  final List<Comment> comments;
 
-  User? user; // Making user nullable
-  List<Comment>? comments; // Making comments nullable
-  String postDate = ''; // Initializing to an empty string
-  String postText = ''; // Initializing to an empty string
-  int likes = 0; // Initializing to 0
+  // Static list to hold all posts
+  static List<Post> allPosts = [];
 
-  Post() {
+  Post({
+    required this.user,
+    required this.postDate,
+    required this.postText,
+    List<Comment> comments = const [], // Initializing comments with an empty list
+  }) : this.comments = List<Comment>.from(comments) {
+    // Add new posts to the static list of all posts
     allPosts.add(this);
   }
 
-  Post.withDetails(this.user, this.postDate, this.postText, this.likes) {
-    allPosts.add(this);
-  }
+  Post.defaultConstructor()
+      : user = User(name: '', phoneNumber: '', neighborhood: '', city: '', bio: ''),
+        postDate = '',
+        postText = '',
+        comments = [];
 
+  // Method to add comments to the post
   void addComment(Comment comment) {
-    comments ??= [];
-    comments!.add(comment);
+    comments.add(comment);
   }
 }

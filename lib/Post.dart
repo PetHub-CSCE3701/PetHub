@@ -1,33 +1,72 @@
+
 import 'User.dart';
-import 'Comment.dart';
+// import 'comment.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class Post {
-  final User user;
-  final String postDate;
-  final String postText;
-  final List<Comment> comments;
+  User user;
+  String postText;
+  DateTime postDate;
 
-  // Static list to hold all posts
   static List<Post> allPosts = [];
 
-  Post({
-    required this.user,
-    required this.postDate,
-    required this.postText,
-    List<Comment> comments = const [], // Initializing comments with an empty list
-  }) : this.comments = List<Comment>.from(comments) {
-    // Add new posts to the static list of all posts
-    allPosts.add(this);
-  }
 
+  Post({required this.user, required this.postText, required this.postDate}){
+
+  }
   Post.defaultConstructor()
       : user = User(name: '', phoneNumber: '', neighborhood: '', city: '', bio: ''),
-        postDate = '',
-        postText = '',
-        comments = [];
+        postDate = DateTime(1),
+        postText = '';
 
-  // Method to add comments to the post
-  void addComment(Comment comment) {
-    comments.add(comment);
+
+  static Future<void> savePosts() async {
+    String posts = allPosts.map((post) {
+      return '${post.user.name},${post.postText},${post.postDate.toString()}';
+    }).join('\n');
+
+    final file = await _localFile;
+    await file.writeAsString(posts);
+  }
+
+  static Future<List<Post>> loadPosts() async {
+    try {
+      final file = await _localFile;
+      String content = await file.readAsString();
+
+      List<Post> loadedPosts = [];
+      List<String> lines = content.split('\n');
+      for (String line in lines) {
+        List<String> data = line.split(',');
+        String username = data[0];
+        String text = data[1];
+        DateTime date = DateTime.parse(data[2]);
+
+        // Create User instance for the post - You might want to adjust this part based on how your User class is structured
+        User postUser = User(name: username, phoneNumber: "", neighborhood: "", city: "", bio: "");
+
+        Post post = Post(user: postUser, postText: text, postDate: date);
+        loadedPosts.add(post);
+      }
+
+      return loadedPosts;
+    } catch (e) {
+      // Error reading the file
+      return [];
+    }
+  }
+
+  static Future<File> get _localFile async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/posts.txt');
+  }
+
+  void createPost(String text, DateTime date) {
+    Post newPost = Post(user: user, postText: text, postDate: date);
+    allPosts.add(newPost);
+    savePosts();
   }
 }
+
+

@@ -1,9 +1,13 @@
+import 'Post.dart';
+
+
 class User {
   String name;
   String phoneNumber;
   String neighborhood;
   String city;
   String bio;
+
 
   User({
     required this.name,
@@ -20,6 +24,13 @@ class User {
         neighborhood = '',
         city = '',
         bio = '';
+
+
+  void createPost(String text, DateTime date) {
+    Post newPost = Post(user: this, postText: text, postDate: date);
+    Post.allPosts.add(newPost); // Add the new post to the allPosts list
+    Post.savePosts(); // Save the updated posts to the file
+  }
 }
 
 class RegularUser extends User {

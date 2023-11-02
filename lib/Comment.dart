@@ -22,6 +22,4 @@ class Comment {
           commentDate = '',
           commentText = '',
           likes = 0;
-
-// Other methods or logic
 }

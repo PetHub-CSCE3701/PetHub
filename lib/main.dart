@@ -1,122 +1,138 @@
 import 'package:flutter/material.dart';
 import 'User.dart';
-import 'Comment.dart';
 import 'Post.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  User newUser = User(
+    name: "Mostafa",
+    phoneNumber: "1234567890",
+    neighborhood: "ABC",
+    city: "XYZ",
+    bio: "this is a test user",
+  );
+
+  List<Post> loadedPosts = await Post.loadPosts(); // Load saved posts
+  Post.allPosts = loadedPosts;
+
+  runApp(MyApp(myUser: newUser));
 }
 
 class MyApp extends StatelessWidget {
+  final User myUser;
+
+  MyApp({required this.myUser});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(),
-        '/userInfo': (context) => UserInfoPage(),
+        '/': (context) => MyHomePage(user: myUser),
+        '/createPost': (context) => CreatePostPage(user: myUser),
+        '/userInfo': (context) => UserInfoPage(user: myUser),
       },
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  final User user;
+
+  MyHomePage({required this.user});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0;
-
-  final List<Post> posts = [
-    Post(
-    user: User(name: 'John Doe', phoneNumber: '123456789', neighborhood: 'ABC', city: 'XYZ', bio: 'Sample Bio'),
-    postDate: '2023-10-25',
-    postText: 'This is a sample post.',
-  ),
-    Post(
-      user: User(name: 'Jane Smith', phoneNumber: '987654321', neighborhood: 'PQR', city: 'LMN', bio: 'Another Bio'),
-      postDate: '2023-10-26',
-      postText: 'Another post for the feed.',
-    ),];
+  List<Post> posts = Post.allPosts; // Get all posts
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post Feed'),
+        title: Text('Posts'),
       ),
-      body: _selectedIndex == 0 ? _buildFeed(context) : Container(),
+      body: PostsList(posts: posts, user: widget.user), // Display posts with user info
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
             label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Add Post',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'User Info',
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: 0,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          if (index == 1) {
+            Navigator.pushNamed(context, '/createPost').then((_) {
+              setState(() {
+                posts = Post.allPosts; // Refresh the posts list after creating a new post
+              });
+            });
+          } else if (index == 2) {
+            Navigator.pushNamed(context, '/userInfo');
+          }
         },
       ),
     );
   }
+}
 
-  Widget _buildFeed(BuildContext context) {
+class PostsList extends StatelessWidget {
+  final List<Post> posts;
+  final User user;
+
+  PostsList({required this.posts, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: posts.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              '/userInfo',
-              arguments: posts[index].user,
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: index % 2 == 0 ? Colors.blue[100] : Colors.green[100],
-                borderRadius: BorderRadius.circular(12),
+        String formattedDate = "${posts[index].postDate.day.toString().padLeft(2, '0')}-"
+            "${posts[index].postDate.month.toString().padLeft(2, '0')}-"
+            "${posts[index].postDate.year}";
+
+        return Container(
+          margin: EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(12.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 5,
+                offset: Offset(0, 3),
               ),
-              padding: EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/userInfo',
-                        arguments: posts[index].user,
-                      );
-                    },
-                    child: Text(
-                      posts[index].user!.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    posts[index].postDate,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 8),
-                  Text(posts[index].postText),
-                ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  posts[index].user.name,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
               ),
-            ),
+              ListTile(
+                title: Text(posts[index].postText),
+                subtitle: Text(formattedDate),
+              ),
+            ],
           ),
         );
       },
@@ -124,11 +140,62 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class UserInfoPage extends StatelessWidget {
+class CreatePostPage extends StatefulWidget {
+  final User user;
+
+  CreatePostPage({required this.user});
+
+  @override
+  _CreatePostPageState createState() => _CreatePostPageState();
+}
+
+class _CreatePostPageState extends State<CreatePostPage> {
+  final TextEditingController textEditingController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    final User user = ModalRoute.of(context)!.settings.arguments as User;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Create Post'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: textEditingController,
+              decoration: InputDecoration(
+                hintText: 'Enter your post text',
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                String text = textEditingController.text;
+                if (text.isNotEmpty) {
+                  setState(() {
+                    widget.user.createPost(text, DateTime.now());
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: Text('Create Post'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
+class UserInfoPage extends StatelessWidget {
+  final User user;
+
+  UserInfoPage({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Information'),
@@ -139,14 +206,13 @@ class UserInfoPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'User Name: ${user.name}',
+              user.name,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Text(
-              'Description: ${user.bio}',
-              style: TextStyle(fontSize: 16),
-            ),
+            Text(user.neighborhood),
+            Text(user.city),
+            Text(user.bio),
           ],
         ),
       ),

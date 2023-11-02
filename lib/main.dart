@@ -28,7 +28,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  final List<Post> posts = [];
+  final List<Post> posts = [
+    Post(
+    user: User(name: 'John Doe', phoneNumber: '123456789', neighborhood: 'ABC', city: 'XYZ', bio: 'Sample Bio'),
+    postDate: '2023-10-25',
+    postText: 'This is a sample post.',
+  ),
+    Post(
+      user: User(name: 'Jane Smith', phoneNumber: '987654321', neighborhood: 'PQR', city: 'LMN', bio: 'Another Bio'),
+      postDate: '2023-10-26',
+      postText: 'Another post for the feed.',
+    ),];
 
   @override
   Widget build(BuildContext context) {
